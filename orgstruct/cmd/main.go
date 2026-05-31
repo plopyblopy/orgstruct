@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/plopyblopy/orgstruct/internal/adapters/postgres"
 	"github.com/plopyblopy/orgstruct/internal/adapters/rest"
 	"github.com/plopyblopy/orgstruct/internal/adapters/rest/handlers"
 	"github.com/plopyblopy/orgstruct/internal/domain"
@@ -19,13 +20,13 @@ import (
 )
 
 func main() {
-	// config
+	// config.
 	cfg, err := config.NewConfig()
 	if err != nil {
 		panic(err)
 	}
 
-	// logger
+	// logger.
 	logLevelStr := cfg.LogLevel
 	if logLevelStr == "" {
 		logLevelStr = "info"
@@ -39,9 +40,9 @@ func main() {
 	log := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: level,
 	}))
-	slog.SetDefault(log) // global logger
+	slog.SetDefault(log) // global logger.
 
-	// service
+	// service.
 	err = app(*cfg, log)
 	if err != nil {
 		log.Error("app error", "err", err)
@@ -54,37 +55,37 @@ func app(cfg config.Config, log *slog.Logger) error {
 	var wg sync.WaitGroup
 	errChan := make(chan error, 1)
 
-	// router
+	// router.
 	router := rest.NewRouter()
 	handlers.RegisterRoutes(router)
 	handler := router.InitRouter(1)
 
-	// http server
+	// http server.
 	srv := rest.NewHttpServer(handler, cfg.HttpConfig, log)
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-
-		// выполняется по srv.ListenAndServe не завершится в виду err или Shutdown
-		err := func() (err error) {
-			// перехват паники
-			defer func() {
-				if r := recover(); r != nil {
-					err = domain.NewPanicError(fmt.Sprintf("%v", r))
-				}
-
-			}()
-			return srv.ListenAndServe(cfg.HttpConfig)
-		}()
-
-		if err != nil && err != http.ErrServerClosed {
+		// выполняется по srv.ListenAndServe
+		// завершится только в виду err или Shutdown.
+		if err := recoverHandler(func() error { return srv.ListenAndServe(cfg.HttpConfig) }); err != nil && err != http.ErrServerClosed {
 			errChan <- err
-			return
 		}
 	}()
 
-	// ожидает сиграл остановки приложения и реализует Graceful Shutdown
+	// GORM
+	// driver postgres.
+	db := postgres.NewDb(cfg.DbConfig)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		if err := recoverHandler(func() error { return db.Open(cfg.DbConfig) }); err != nil {
+			errChan <- err
+		}
+	}()
+
+	// ожидает сиграл остановки приложения и реализует Graceful Shutdown.
 	stopChan := make(chan os.Signal, 1)
 	signal.Notify(stopChan, syscall.SIGINT, syscall.SIGTERM)
 
@@ -100,7 +101,7 @@ func app(cfg config.Config, log *slog.Logger) error {
 	}
 }
 
-// Graceful Shutdown для http server
+// Graceful Shutdown для http server.
 func shutdownServer(srv *rest.Server, wg *sync.WaitGroup, timeout time.Duration) error {
 	slog.Info("shutting down server...")
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -113,5 +114,24 @@ func shutdownServer(srv *rest.Server, wg *sync.WaitGroup, timeout time.Duration)
 
 	wg.Wait()
 	slog.Info("http server stopped")
+	return nil
+}
+
+// recoverHandler функция-помощи для перехвата panic.
+func recoverHandler(f func() error) error {
+	err := func() (err error) {
+		defer func() {
+			if r := recover(); r != nil {
+				err = domain.NewPanicError(fmt.Sprintf("%v", r))
+			}
+		}()
+
+		return f()
+	}()
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
