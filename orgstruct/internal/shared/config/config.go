@@ -23,10 +23,10 @@ type Config struct {
 	LogLevel string `env:"LOG_LEVEL"`
 
 	// HTTP
-	rest.HttpConfig
+	HttpConfig rest.HttpConfig
 
 	// DB
-	postgres.DbConfig
+	DbConfig postgres.DbConfig
 }
 
 // Для определения окружения пытается получить значение из флага, если empty то из environments, если empty то IsProd = false
