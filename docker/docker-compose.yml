@@ -1,0 +1,50 @@
+name: orgstruct
+
+services:
+# orgstruct-postgres база данных postgresql
+  orgstruct-postgres:
+    image: postgres:18-alpine
+    container_name: orgstruct-db
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - orgstruct-net
+
+# orgstruct-migrate применяет миграции с goose для postgresql
+  orgstruct-migrate:
+    image: orgstruct-goose-migrate:1.0.0
+    container_name: orgstruct-migrate
+    depends_on:
+      orgstruct-postgres:
+        condition: service_healthy
+    environment:
+      GOOSE_DRIVER: postgres
+      GOOSE_DBSTRING: host=orgstruct-postgres user=${DB_USERNAME} dbname=${DB_DATABASE} password=${DB_PASSWORD} sslmode=${DB_SSLMODE} 
+    networks:
+      - orgstruct-net
+
+# migrate-init создает volume с миграциями
+  migrate-init:
+    image: alpine:3.23
+    volumes:
+      - migrations_data:/migrations
+    command: ["echo", "Use 'just migrate-init' to populate the volume"]
+
+networks:
+  orgstruct-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  migrations_data:
