@@ -1,0 +1,43 @@
+-- +goose Up
+
+-- departments таблица отделов.
+CREATE TABLE IF NOT EXISTS departments (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY, 
+    name VARCHAR(200) NOT NULL,
+    parent_id INT NULL, -- Если NULL - это корень.
+    created_at TIMESTAMP NOT NULL,
+    
+    CONSTRAINT chk_name_len_min_max CHECK (LENGTH(name) >= 1 AND LENGTH(name) <= 200),
+    CONSTRAINT chk_name_trimmed CHECK (name = TRIM(name)), -- Проверка на пробелы в начале и конце строки.
+    CONSTRAINT uq_child_name UNIQUE (parent_id, name), -- Проверка уникальности name у дочерних departments от конкретного родительского department.
+    CONSTRAINT fk_departments_parent 
+        FOREIGN KEY (parent_id) 
+        REFERENCES departments (id) 
+        ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX uq_root_name ON departments (name) WHERE parent_id IS NULL;
+
+-- employee таблица работников.
+CREATE TABLE IF NOT EXISTS employee (
+    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    department_id INT NOT NULL,
+    full_name VARCHAR(200) NOT NULL,
+    position VARCHAR(200) NOT NULL,
+    hired_at TIMESTAMP NULL,
+    created_at TIMESTAMP NOT NULL,
+
+    CONSTRAINT chk_full_name_len_min_max CHECK (LENGTH(full_name) >= 1 AND LENGTH(full_name) <= 200),
+    CONSTRAINT chk_full_name_trimmed CHECK (full_name = TRIM(full_name)), -- Проверка на пробелы в начале и конце строки.
+    CONSTRAINT chk_position_len_min_max CHECK (LENGTH(position) >= 1 AND LENGTH(position) <= 200),
+    CONSTRAINT fk_employees_department
+        FOREIGN KEY (department_id)
+        REFERENCES departments (id)
+        ON DELETE CASCADE
+);
+
+
+-- +goose Down
+
+DROP TABLE IF EXISTS employee;
+DROP TABLE IF EXISTS departments;
