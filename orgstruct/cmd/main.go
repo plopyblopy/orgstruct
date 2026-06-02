@@ -55,9 +55,23 @@ func app(cfg config.Config, log *slog.Logger) error {
 	var wg sync.WaitGroup
 	errChan := make(chan error, 1)
 
+	// GORM
+	// driver postgres.
+	db := postgres.NewDb(cfg.DbConfig)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		if err := recoverHandler(func() error { return db.Open(cfg.DbConfig) }); err != nil {
+			errChan <- err
+		}
+	}()
+
+	wg.Wait() // ожидает создания Db
+
 	// router.
 	router := rest.NewRouter()
-	handlers.RegisterRoutes(router)
+	handlers.RegisterRoutes(router, db)
 	handler := router.InitRouter(1)
 
 	// http server.
@@ -69,18 +83,6 @@ func app(cfg config.Config, log *slog.Logger) error {
 		// выполняется по srv.ListenAndServe
 		// завершится только в виду err или Shutdown.
 		if err := recoverHandler(func() error { return srv.ListenAndServe(cfg.HttpConfig) }); err != nil && err != http.ErrServerClosed {
-			errChan <- err
-		}
-	}()
-
-	// GORM
-	// driver postgres.
-	db := postgres.NewDb(cfg.DbConfig)
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		if err := recoverHandler(func() error { return db.Open(cfg.DbConfig) }); err != nil {
 			errChan <- err
 		}
 	}()
