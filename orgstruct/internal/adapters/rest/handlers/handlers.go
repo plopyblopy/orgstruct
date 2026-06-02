@@ -9,7 +9,7 @@ import (
 )
 
 // PostDepartment обработчик запроса на создание нового Department
-func PostDepartment(uc func(name string, parentId *int) (domain.Department, error)) http.HandlerFunc {
+func PostDepartment(uc func(name string, parentId *int) (*domain.Department, error)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		i := struct {
 			Name     string `json:"name"`
@@ -18,15 +18,14 @@ func PostDepartment(uc func(name string, parentId *int) (domain.Department, erro
 
 		err := json.NewDecoder(r.Body).Decode(&i)
 		if err != nil {
-			RespondError(w, http.StatusBadRequest, err.Error())
+			RespondRowError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 		defer r.Body.Close()
 
 		model, err := uc(i.Name, i.ParentId)
 		if err != nil {
-			RespondError(w, http.StatusBadRequest, err.Error())
-
+			RespondError(w, err)
 			return
 		}
 
