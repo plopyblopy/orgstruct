@@ -3,12 +3,13 @@ project_path := "./orgstruct"
 project_prefix := "orgstruct_"
 migrate_volume_name := "migrations_data"
 
+
 #################################
 ### app
 
 # run main.go by default with the env production parameter
 run:
-    cd {{project_path}} && go run ./cmd/main.go -env prod
+    cd {{project_path}} && go run ./cmd/main.go -env dev
 
 # run main.go with the env parameter
 run-env env:
@@ -24,6 +25,10 @@ go-mod-edit name:
 # run docker postgres db, build image orgstruct-goose-migrate, implement migrations, remove migrations container
 docker-deploy: docker-up-db docker-build-migrate migrate-init migrate-up
 
+# start db container
+docker-start-db:
+    docker compose -f ./docker/docker-compose.yml start orgstruct-postgres
+
 # create containers applies migrations on database and remove migration container
 docker-up-db:
     docker compose -f ./docker/docker-compose.yml up -d orgstruct-postgres
@@ -32,7 +37,7 @@ docker-up-db:
 ### migrate
 
 # create or update image with an argument indicating the path to migration from justfile
-docker-build-migrate path="{{projectPath}}/migrations":
+docker-build-migrate path="{{project_path}}/migrations":
     docker build -t orgstruct-goose-migrate:1.0.0 \
     --build-arg MIGRATIONS_PATH={{path}} \
     -f ./docker/Dockerfile.migrate .
