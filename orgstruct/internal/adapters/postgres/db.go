@@ -21,7 +21,7 @@ type DbConfig struct {
 
 // Db хранит указатель на gorm.DB и строку dsn.
 type Db struct {
-	Db  *gorm.DB
+	db  *gorm.DB
 	dsn string
 }
 
@@ -44,9 +44,9 @@ func (db *Db) Open(c DbConfig) error {
 		return err
 	}
 
-	db.Db = gormDb
+	db.db = gormDb
 
-	sqlDb, err := db.Db.DB()
+	sqlDb, err := db.db.DB()
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func (db *Db) Open(c DbConfig) error {
 
 // Close закрывает подключение к базе данных.
 func (db *Db) Close() error {
-	sqlDb, err := db.Db.DB()
+	sqlDb, err := db.db.DB()
 	if err != nil {
 		return err
 	}
