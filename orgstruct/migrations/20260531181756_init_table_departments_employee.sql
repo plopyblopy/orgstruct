@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS employee (
     CONSTRAINT chk_full_name_len_min_max CHECK (LENGTH(full_name) >= 1 AND LENGTH(full_name) <= 200),
     CONSTRAINT chk_full_name_trimmed CHECK (full_name = TRIM(full_name)), -- Проверка на пробелы в начале и конце строки.
     CONSTRAINT chk_position_len_min_max CHECK (LENGTH(position) >= 1 AND LENGTH(position) <= 200),
+    CONSTRAINT chk_position_trimmed CHECK (position = TRIM(position)), -- Проверка на пробелы в начале и конце строки.
     CONSTRAINT fk_employees_department
         FOREIGN KEY (department_id)
         REFERENCES departments (id)
