@@ -6,6 +6,7 @@ import (
 	"github.com/plopyblopy/orgstruct/internal/domain"
 )
 
+// Department GORM адаптированный тип.
 type Department struct {
 	Id               int         `gorm:"column:id;type:int;primaryKey;autoIncrement"`
 	Name             string      `gorm:"column:name;type:varchar(200);not null;check:length(name) >= 1 AND length(name) <= 200;check:name = trim(name);uniqueIndex:uq_child_name,priority:2;uniqueIndex:uq_root_name,where:parent_id IS NULL"`
@@ -14,6 +15,7 @@ type Department struct {
 	ParentDepartment *Department `gorm:"foreignKey:ParentId;references:Id;constraint:OnDelete:CASCADE"`
 }
 
+// NewDepartment конструктор Department.
 func NewDepartment(model domain.Department) *Department {
 	return &Department{
 		Name:     model.Name,
@@ -21,6 +23,7 @@ func NewDepartment(model domain.Department) *Department {
 	}
 }
 
+// Employee GORM адаптированный тип.
 type Employee struct {
 	Id           int        `gorm:"column:id;type:int;primaryKey;autoIncrement"`
 	DepartmentId int        `gorm:"column:department_id;type:int;not null"`
@@ -31,6 +34,7 @@ type Employee struct {
 	Department   Department `gorm:"foreignKey:DepartmentId;references:Id;constraint:OnDelete:CASCADE;constraint:fk_employees_department"`
 }
 
+// NewEmployee конструктор Employee.
 func NewEmployee(model domain.Employee) *Employee {
 	return &Employee{
 		DepartmentId: model.Id,

@@ -14,6 +14,7 @@ func RespondJSON(w http.ResponseWriter, status int, data any) {
 	json.NewEncoder(w).Encode(data)
 }
 
+// RespondError стандартный обработчик ошибок для ответа на запрос клиента.
 func RespondError(w http.ResponseWriter, err error) {
 	var status int
 	if sc, ok := err.(domain.HTTPStatusCoder); ok {
@@ -33,10 +34,12 @@ func RespondError(w http.ResponseWriter, err error) {
 	}
 }
 
+// RespondRowError форматирует ответ ошибки в одну строку.
 func RespondRowError(w http.ResponseWriter, status int, message string) {
 	RespondJSON(w, status, map[string]string{"error": message})
 }
 
+// RespondRowError форматирует ответ ошибки в N строк.
 func RespondMultiRowError[T any](w http.ResponseWriter, status int, errs T) {
 	RespondJSON(w, status, map[string]interface{}{"errors": errs})
 }

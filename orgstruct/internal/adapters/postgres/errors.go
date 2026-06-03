@@ -6,6 +6,7 @@ import (
 	"github.com/plopyblopy/orgstruct/internal/domain"
 )
 
+// HandleSQLError преобразует ошибку от базы данных в доменную приложения.
 func HandleSQLError(code string, msg string) error {
 	switch code {
 	case domain.SelfReference:
