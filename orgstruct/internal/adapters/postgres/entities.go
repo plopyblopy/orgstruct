@@ -37,7 +37,7 @@ type Employee struct {
 // NewEmployee конструктор Employee.
 func NewEmployee(model domain.Employee) *Employee {
 	return &Employee{
-		DepartmentId: model.Id,
+		DepartmentId: model.DepartmentId,
 		FullName:     model.FullName,
 		Position:     model.Position,
 		HiredAt:      model.HiredAt,
