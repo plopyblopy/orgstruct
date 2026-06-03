@@ -82,18 +82,18 @@ func TestDepartmentRepository(t *testing.T) {
 
 		tests := []struct {
 			name    string
-			expDept domain.Department
+			expDept *domain.Department
 			expErr  error
 		}{
-			{"normal add", domain.Department{Name: "Test departament", ParentId: nil}, nil},
+			{"normal add", &domain.Department{Name: "Test Departament", ParentId: nil}, nil},
 		}
 
 		for _, tt := range tests {
 			// Act
-			actDept, actErr := departamentRepo.Add(tt.expDept)
+			actErr := departamentRepo.Add(ctx, tt.expDept)
 
 			// Assert
-			assert.Equal(tt.expDept.Name, actDept.Name)
+			assert.Equal(tt.expDept.Name, "Test Departament")
 			assert.ErrorIs(actErr, tt.expErr)
 		}
 	})
