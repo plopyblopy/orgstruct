@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"fmt"
+	"log/slog"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -39,6 +40,8 @@ func NewDb(c DbConfig) *Db {
 
 // Open открывает подключение к базе данных.
 func (db *Db) Open(c DbConfig) error {
+	slog.Info("connected to postgres", "host", c.Host, "port", c.Port, "dbname", c.Database)
+
 	gormDb, err := gorm.Open(postgres.Open(db.dsn), &gorm.Config{})
 	if err != nil {
 		return err
