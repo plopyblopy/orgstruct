@@ -9,7 +9,7 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-// Creates postgres container
+// Creates postgres container.
 func NewPostgresTestcontainer(ctx context.Context, c TestConfig) (*postgres.PostgresContainer, error) {
 	pgContainer, err := postgres.Run(ctx, c.Image,
 		postgres.WithDatabase(c.DbConfig.Database),
@@ -26,6 +26,8 @@ func NewPostgresTestcontainer(ctx context.Context, c TestConfig) (*postgres.Post
 	return pgContainer, nil
 }
 
+// TestSuite используется для переиспользования Testcontainer
+// приводя базу данных к начальному состоянию.
 type TestSuite struct {
 	PgContainer  *postgres.PostgresContainer
 	Db           *postgresDb.Db
