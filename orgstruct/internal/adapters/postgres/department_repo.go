@@ -23,7 +23,7 @@ func NewDepartmentRepository(db *Db) *DepartmentRepository {
 // Добавляет postgres.Department в БД.
 func (r *DepartmentRepository) Add(ctx context.Context, model *domain.Department) error {
 	entity := NewDepartment(*model)
-	// result := r.db.Create(&entity)
+
 	result := r.db.WithContext(context.Background()).Create(&entity)
 
 	if result.Error != nil {

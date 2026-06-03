@@ -60,7 +60,7 @@ func NewEmployee(departmentId int, fullName string, position string, hiredAt *ti
 	}
 
 	trimFullName := strings.TrimSpace(fullName)
-	trimPosition := strings.TrimSpace(fullName)
+	trimPosition := strings.TrimSpace(position)
 
 	return &Employee{
 		DepartmentId: departmentId,
