@@ -16,6 +16,8 @@ type RouteRegistrar interface {
 // RegisterRoutes регистрирует маршруты, создает зависимости.
 func RegisterRoutes(r RouteRegistrar, db *postgres.Db) {
 	departamentRepo := postgres.NewDepartmentRepository(db)
+	employeeRepo := postgres.NewEmployeeRepository(db)
 
 	r.AddHandler("POST /departments", PostDepartment(usecases.PostDepartment(departamentRepo)))
+	r.AddHandler("POST /departments/{id}/employees", PostEmployee(usecases.PostEmployee(employeeRepo)))
 }
