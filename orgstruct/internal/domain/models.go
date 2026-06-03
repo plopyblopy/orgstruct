@@ -14,7 +14,7 @@ type Department struct {
 }
 
 // NewDepartment конструктор валидирует и возвращает Department.
-func NewDepartment(name string, parentId *int) (Department, error) {
+func NewDepartment(name string, parentId *int) (*Department, error) {
 	verr := []FieldError{}
 
 	if len(name) < 1 || len(name) > 200 {
@@ -22,12 +22,12 @@ func NewDepartment(name string, parentId *int) (Department, error) {
 	}
 
 	if len(verr) != 0 {
-		return Department{}, NewValidationError(verr)
+		return nil, NewValidationError(verr)
 	}
 
 	trimName := strings.TrimSpace(name)
 
-	return Department{
+	return &Department{
 		Name:     trimName,
 		ParentId: parentId,
 	}, nil
@@ -44,7 +44,7 @@ type Employee struct {
 }
 
 // NewEmployee конструктор валидирует и возвращает Employee.
-func NewEmployee(departmentId int, fullName string, position string, hiredAt *time.Time) (Employee, error) {
+func NewEmployee(departmentId int, fullName string, position string, hiredAt *time.Time) (*Employee, error) {
 	verr := []FieldError{}
 
 	if len(fullName) < 1 || len(fullName) > 200 {
@@ -56,13 +56,13 @@ func NewEmployee(departmentId int, fullName string, position string, hiredAt *ti
 	}
 
 	if len(verr) != 0 {
-		return Employee{}, NewValidationError(verr)
+		return nil, NewValidationError(verr)
 	}
 
 	trimFullName := strings.TrimSpace(fullName)
 	trimPosition := strings.TrimSpace(fullName)
 
-	return Employee{
+	return &Employee{
 		DepartmentId: departmentId,
 		FullName:     trimFullName,
 		Position:     trimPosition,

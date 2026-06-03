@@ -1,15 +1,18 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
+	"time"
 
 	. "github.com/plopyblopy/orgstruct/internal/adapters/rest"
 	"github.com/plopyblopy/orgstruct/internal/domain"
 )
 
-// PostDepartment обработчик запроса на создание нового Department
-func PostDepartment(uc func(name string, parentId *int) (*domain.Department, error)) http.HandlerFunc {
+// PostDepartment обработчик запроса на создание нового Department.
+func PostDepartment(uc func(ctx context.Context, name string, parentId *int) (*domain.Department, error)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		i := struct {
 			Name     string `json:"name"`
@@ -23,7 +26,7 @@ func PostDepartment(uc func(name string, parentId *int) (*domain.Department, err
 		}
 		defer r.Body.Close()
 
-		model, err := uc(i.Name, i.ParentId)
+		model, err := uc(r.Context(), i.Name, i.ParentId)
 		if err != nil {
 			RespondError(w, err)
 			return
