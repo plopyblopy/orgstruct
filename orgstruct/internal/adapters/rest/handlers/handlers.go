@@ -74,3 +74,44 @@ func PostEmployee(uc func(ctx context.Context, r domain.AddEmployeeRequest) (*do
 		RespondJSON(w, http.StatusCreated, model)
 	}
 }
+
+func GetDepartmentsWithChild(uc func(ctx context.Context, deptId int, depth int, includeEmployees bool) (*domain.DepartmentWithChildResponse, error)) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		deptId, err := strconv.Atoi(r.PathValue("id"))
+		if err != nil {
+			RespondRowError(w, http.StatusBadRequest, "Invalid department id.")
+			return
+		} else if deptId < 0 {
+			RespondRowError(w, http.StatusBadRequest, "The department ID must not be less than zero.")
+			return
+		}
+
+		i := struct {
+			Depth            int  `json:"depth"`
+			IncludeEmployees bool `json:"include_employees"`
+		}{
+			Depth:            1,
+			IncludeEmployees: true,
+		}
+
+		err = json.NewDecoder(r.Body).Decode(&i)
+		if err != nil {
+			RespondError(w, err)
+			return
+		}
+		defer r.Body.Close()
+
+		if i.Depth < 1 || i.Depth > 5 {
+			RespondRowError(w, http.StatusBadRequest, "The depth value cannot be less than 1 or more than 5.")
+			return
+		}
+
+		response, err := uc(r.Context(), deptId, i.Depth, i.IncludeEmployees)
+		if err != nil {
+			RespondError(w, err)
+			return
+		}
+
+		RespondJSON(w, http.StatusOK, response)
+	}
+}
