@@ -1,21 +1,28 @@
 package postgres
 
 import (
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/plopyblopy/orgstruct/internal/domain"
 )
 
 // HandleSQLError преобразует ошибку от базы данных в доменную приложения.
-func HandleSQLError(code string, msg string) error {
-	switch code {
+func HandleSQLError(err error) error {
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) {
+		return domain.NewDefaultSqlError(err.Error())
+	}
+
+	switch pgErr.Code {
 	case domain.SelfReference:
-		return domain.NewSelfReferenceError(msg)
+		return domain.NewSelfReferenceError(pgErr.Message)
 	case domain.Cycle:
-		return domain.NewCycleError(msg)
+		return domain.NewCycleError(pgErr.Message)
 	case domain.ForeignKeyViolation:
-		return domain.NewForeignKeyViolationError(msg)
+		return domain.NewForeignKeyViolationError(pgErr.Message)
 	default:
-		return domain.NewDefaultSqlError(fmt.Sprintf("code: %s, message: %s", code, msg))
+		return domain.NewDefaultSqlError(fmt.Sprintf("code: %s, message: %s", pgErr.Code, pgErr.Message))
 	}
 }

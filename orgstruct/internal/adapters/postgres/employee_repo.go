@@ -26,12 +26,7 @@ func (r *EmployeeRepository) Add(ctx context.Context, model *domain.Employee) er
 
 	result := r.db.WithContext(ctx).Create(&entity)
 	if result.Error != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(result.Error, &pgErr) {
-			return HandleSQLError(pgErr.Code, pgErr.Message)
-		} else {
-			return result.Error
-		}
+		return HandleSQLError(result.Error)
 	}
 
 	if result.RowsAffected == 0 {
