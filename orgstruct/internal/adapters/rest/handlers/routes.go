@@ -21,4 +21,5 @@ func RegisterRoutes(r RouteRegistrar, db *postgres.Db) {
 	r.AddHandler("POST /departments", PostDepartment(usecases.PostDepartment(departamentRepo)))
 	r.AddHandler("POST /departments/{id}/employees", PostEmployee(usecases.PostEmployee(employeeRepo)))
 	r.AddHandler("GET /departments/{id}", GetDepartmentsWithChild(usecases.GetDepartmentTree(departamentRepo, employeeRepo)))
+	r.AddHandler("PATCH /departments/{id}", PatchDepartment(usecases.PatchDepartment(departamentRepo)))
 }

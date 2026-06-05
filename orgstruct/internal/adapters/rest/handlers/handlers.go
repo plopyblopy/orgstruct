@@ -56,7 +56,7 @@ func PostEmployee(uc func(ctx context.Context, r domain.AddEmployeeRequest) (*do
 
 		err = json.NewDecoder(r.Body).Decode(&i)
 		if err != nil {
-			RespondError(w, err)
+			RespondRowError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 		defer r.Body.Close()
@@ -75,6 +75,7 @@ func PostEmployee(uc func(ctx context.Context, r domain.AddEmployeeRequest) (*do
 	}
 }
 
+// GetDepartmentsWithChild обработчик запроса на получение Department с вложенными Employee и child Departments.
 func GetDepartmentsWithChild(uc func(ctx context.Context, deptId int, depth int, includeEmployees bool) (*domain.DepartmentWithChildResponse, error)) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		deptId, err := strconv.Atoi(r.PathValue("id"))
@@ -96,7 +97,7 @@ func GetDepartmentsWithChild(uc func(ctx context.Context, deptId int, depth int,
 
 		err = json.NewDecoder(r.Body).Decode(&i)
 		if err != nil {
-			RespondError(w, err)
+			RespondRowError(w, http.StatusBadRequest, err.Error())
 			return
 		}
 		defer r.Body.Close()
@@ -113,5 +114,34 @@ func GetDepartmentsWithChild(uc func(ctx context.Context, deptId int, depth int,
 		}
 
 		RespondJSON(w, http.StatusOK, response)
+	}
+}
+
+// PatchDepartment обработчик запроса на обновление Department.
+func PatchDepartment(uc func(ctx context.Context, dept domain.UpdateDepartment) (*domain.Department, error)) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var dept domain.UpdateDepartment
+
+		deptId, err := strconv.Atoi(r.PathValue("id"))
+		if err != nil {
+			RespondRowError(w, http.StatusBadRequest, "Invalid department id.")
+			return
+		}
+		dept.Id = deptId
+
+		err = json.NewDecoder(r.Body).Decode(&dept)
+		if err != nil {
+			RespondRowError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		defer r.Body.Close()
+
+		model, err := uc(r.Context(), dept)
+		if err != nil {
+			RespondError(w, err)
+			return
+		}
+
+		RespondJSON(w, http.StatusOK, ParseDepartamentModelToResponse(*model))
 	}
 }

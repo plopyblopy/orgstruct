@@ -40,6 +40,7 @@ func PostEmployee(repo domain.EmployeeAdder) func(ctx context.Context, r domain.
 	}
 }
 
+// GetDepartmentTree usecase для получения Department с или без Employees и с вложенными дочерними Departments
 func GetDepartmentTree(deptRepo domain.WithDepthHierarchyGetter, empRepo domain.EmployeesByDepartmentIdsGetter) func(ctx context.Context, deptId int, depth int, includeEmployees bool) (*domain.DepartmentWithChildResponse, error) {
 	return func(ctx context.Context, deptId int, depth int, includeEmployees bool) (*domain.DepartmentWithChildResponse, error) {
 		// получение Departments с полем depth.
@@ -109,5 +110,26 @@ func GetDepartmentTree(deptRepo domain.WithDepthHierarchyGetter, empRepo domain.
 		}
 
 		return root, nil
+	}
+}
+
+// PatchDepartment для частичного обновления Department.
+func PatchDepartment(repo domain.DepartmentUpdater) func(ctx context.Context, dept domain.UpdateDepartment) (*domain.Department, error) {
+	return func(ctx context.Context, dept domain.UpdateDepartment) (*domain.Department, error) {
+		if dept.Name.Valid {
+			v := domain.NewValidator()
+			v.NotNil("name", dept.Name.Value)
+			v.MinMax("name", domain.DeptNameMinLen, domain.DeptNameMaxLen, len(*dept.Name.Value))
+			if err := v.Validate(); err != nil {
+				return nil, err
+			}
+		}
+
+		model, err := repo.Update(ctx, dept)
+		if err != nil {
+			return nil, err
+		}
+
+		return model, nil
 	}
 }

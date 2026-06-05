@@ -1,13 +1,9 @@
 package domain
 
-import "time"
-
-type AddEmployeeRequest struct {
-	FullName     string
-	Position     string
-	DepartmentId int
-	HiredAt      *time.Time
-}
+import (
+	"encoding/json"
+	"time"
+)
 
 type DepartmentResponse struct {
 	Id        int       `json:"id"`
@@ -25,6 +21,13 @@ type EmployeeResponse struct {
 	CreatedAt    time.Time  `json:"created_at"`
 }
 
+type AddEmployeeRequest struct {
+	FullName     string
+	Position     string
+	DepartmentId int
+	HiredAt      *time.Time
+}
+
 type DepartmentWithChildResponse struct {
 	DepartmentResponse
 	Employees []EmployeeResponse             `json:"employees,omitempty"`
@@ -34,6 +37,13 @@ type DepartmentWithChildResponse struct {
 type FlatDepartments struct {
 	Department
 	Depth int
+}
+
+type UpdateDepartment struct {
+	Id        int                     `json:"id"`
+	Name      UpdateField[*string]    `json:"name"`
+	ParentId  UpdateField[*int]       `json:"parent_id"`
+	CreatedAt UpdateField[*time.Time] `json:"created_at"`
 }
 
 // UpdateField - это тип для обновления полей, который позволяет вам определить, следует ли обновлять поле, поскольку оно может быть необязательным и вообще не передаваться.

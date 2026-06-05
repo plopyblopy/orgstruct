@@ -23,3 +23,8 @@ type WithDepthHierarchyGetter interface {
 type EmployeesByDepartmentIdsGetter interface {
 	GetByDepartmentIds(ctx context.Context, ids ...int) ([]*EmployeeResponse, error)
 }
+
+// DepartmentUpdater для частичного обновления Department.
+type DepartmentUpdater interface {
+	Update(ctx context.Context, dept UpdateDepartment) (*Department, error)
+}
