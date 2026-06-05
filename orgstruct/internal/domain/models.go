@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+// Department ограничения.
+const (
+	DeptNameMinLen = 1
+	DeptNameMaxLen = 200
+)
+
 // Department описывает отдел.
 type Department struct {
 	Id        int
@@ -15,14 +21,12 @@ type Department struct {
 
 // NewDepartment конструктор валидирует и возвращает Department.
 func NewDepartment(name string, parentId *int) (*Department, error) {
-	verr := []FieldError{}
+	v := NewValidator()
 
-	if len(name) < 1 || len(name) > 200 {
-		verr = append(verr, NewFieldError("name", ErrLengthOutOfRange(1, 200, len(name))))
-	}
+	v.MinMax("name", DeptNameMinLen, DeptNameMaxLen, len(name))
 
-	if len(verr) != 0 {
-		return nil, NewValidationError(verr)
+	if err := v.Validate(); err != nil {
+		return nil, err
 	}
 
 	trimName := strings.TrimSpace(name)
@@ -33,7 +37,15 @@ func NewDepartment(name string, parentId *int) (*Department, error) {
 	}, nil
 }
 
-// Department описывает сотрудника.
+// Employee ограничения.
+const (
+	EmpFullNameMinLen = 1
+	EmpFullNameMaxLen = 200
+	EmpPositionMinLen = 1
+	EmpPositionMaxLen = 200
+)
+
+// Employee описывает сотрудника.
 type Employee struct {
 	Id           int
 	DepartmentId int
@@ -45,18 +57,13 @@ type Employee struct {
 
 // NewEmployee конструктор валидирует и возвращает Employee.
 func NewEmployee(departmentId int, fullName string, position string, hiredAt *time.Time) (*Employee, error) {
-	verr := []FieldError{}
+	v := NewValidator()
 
-	if len(fullName) < 1 || len(fullName) > 200 {
-		verr = append(verr, NewFieldError("fullName", ErrLengthOutOfRange(1, 200, len(fullName))))
-	}
+	v.MinMax("fullName", EmpFullNameMinLen, EmpFullNameMaxLen, len(fullName))
+	v.MinMax("position", EmpPositionMinLen, EmpPositionMaxLen, len(position))
 
-	if len(position) < 1 || len(position) > 200 {
-		verr = append(verr, NewFieldError("position", ErrLengthOutOfRange(1, 200, len(position))))
-	}
-
-	if len(verr) != 0 {
-		return nil, NewValidationError(verr)
+	if err := v.Validate(); err != nil {
+		return nil, err
 	}
 
 	trimFullName := strings.TrimSpace(fullName)
