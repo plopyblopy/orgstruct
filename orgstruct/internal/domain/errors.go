@@ -79,6 +79,10 @@ func ErrLengthOutOfRange(min, max, got int) string {
 	return fmt.Sprintf("length %d is not within allowed range [%d, %d]", got, min, max)
 }
 
+func ErrNotNil() string {
+	return fmt.Sprint("It cannot be null.")
+}
+
 //////////////
 // SQL errors
 
