@@ -35,3 +35,37 @@ type FlatDepartments struct {
 	Department
 	Depth int
 }
+
+// UpdateField - это тип для обновления полей, который позволяет вам определить, следует ли обновлять поле, поскольку оно может быть необязательным и вообще не передаваться.
+//
+// Value: если было передано ненулевое значение, оно сохраняется здесь.
+//
+// Valid: false - поле не было передано, true - есть null или Value.
+//
+// IsNull: false != null, true == null.
+type UpdateField[T any] struct {
+	Value  T
+	Valid  bool
+	IsNull bool
+}
+
+// UnmarshalJSON реализует интерфей Unmarshaler.
+//
+// Проверяет, было ли передано поле, а также наличие значения или null.
+func (f *UpdateField[T]) UnmarshalJSON(data []byte) error {
+	// если null.
+	if string(data) == "null" {
+		f.Valid = true
+		f.IsNull = true
+		return nil
+	}
+
+	// если не null значение.
+	if err := json.Unmarshal(data, &f.Value); err != nil {
+		return err
+	}
+
+	f.Valid = true
+
+	return nil
+}
