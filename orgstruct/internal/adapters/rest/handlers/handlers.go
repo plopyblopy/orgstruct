@@ -32,7 +32,7 @@ func PostDepartment(uc func(ctx context.Context, name string, parentId *int) (*d
 			return
 		}
 
-		RespondJSON(w, http.StatusCreated, model)
+		RespondJSON(w, http.StatusCreated, ParseDepartamentModelToResponse(*model))
 	}
 }
 
@@ -71,7 +71,7 @@ func PostEmployee(uc func(ctx context.Context, r domain.AddEmployeeRequest) (*do
 			RespondError(w, err)
 			return
 		}
-		RespondJSON(w, http.StatusCreated, model)
+		RespondJSON(w, http.StatusCreated, ParseEmployeeModelToResponse(*model))
 	}
 }
 
