@@ -23,7 +23,7 @@ func NewDepartmentRepository(db *Db) *DepartmentRepository {
 func (r *DepartmentRepository) Add(ctx context.Context, model *domain.Department) error {
 	entity := NewDepartment(*model)
 
-	result := r.db.WithContext(context.Background()).Create(&entity)
+	result := r.db.WithContext(ctx).Create(&entity)
 	if result.Error != nil {
 		return HandleSQLError(result.Error)
 	}
